@@ -14,6 +14,7 @@ var username = 'someone';
 var updateNameButton;
 var playButton;
 var stopButton;
+var logPosButton;
 
 function preload() {
   soundFormats('mp3', 'ogg');
@@ -69,9 +70,20 @@ function setup() {
     console.log("stop playing audio");
     mySound.stop();
   })
-
   mySound.setVolume(1);
+
+  logPosButton = createButton("Log Positions");
+  logPosButton.mousePressed(function() {
+    console.log("My pos is: " + blob.pos);
+    for (var i = blobs.length - 1; i >= 0; i--) {
+      var otherBlobPos = createVector(blobs[i].x, blobs[i].y);
+      console.log("Pos for : " + blob.id + " is : " + otherBlobPos);
+    }
+  });
 }
+
+
+
 
 function draw() {
   noStroke()
@@ -117,11 +129,9 @@ function draw() {
       text(blobs[i].id, blobs[i].x, blobs[i].y + blobs[i].r);
 
       // change volumne of sound when aura of differentplayer was crossed
-      console.log(blob.pos.x);
-      console.log(blobs[i].pos);
-      var crossedX = (blob.pos.x - blobs[i].x < auraRadius4);
-      var crossedY = (blob.pos.y - blobs[i].y < auraRadius4);
-      if(crossedX && corssedY) {
+      var crossedX = blob.pos.x - blobs[i].x < auraRadius4;
+      var crossedY = blob.pos.y - blobs[i].y < auraRadius4;
+      if(crossedX && crossedY) {
         console.log("Crossed aura");
       }
     }

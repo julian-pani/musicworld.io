@@ -36,7 +36,7 @@ function setup() {
   createCanvas(1200, 800);
   // Start a socket connection to the server
   // Some day we would run this server somewhere else
-  socket = io.connect('http://localhost:3000');
+  socket = io.connect('http://' + window.location.hostname + ':3000');
 
   blob = new Blob(username, random(width), random(height), random(8, 24));
   // Make a little object with  and y
@@ -107,6 +107,8 @@ function draw() {
       var auraRadius2 = blobs[i].r * 2 + 25
       var auraRadius3 = blobs[i].r * 2 + 58
       var auraRadius4 = blobs[i].r * 2 + 135
+      var radiuses = [auraRadius1, auraRadius2, auraRadius3, auraRadius4];
+
       fill(0, 0, 255, 80);
       ellipse(blobs[i].x, blobs[i].y, auraRadius1, auraRadius1);
 
@@ -128,12 +130,26 @@ function draw() {
       textSize(4);
       text(blobs[i].id, blobs[i].x, blobs[i].y + blobs[i].r);
 
-      // change volumne of sound when aura of differentplayer was crossed
-      var crossedX = blob.pos.x - blobs[i].x < auraRadius4;
-      var crossedY = blob.pos.y - blobs[i].y < auraRadius4;
-      if(crossedX && crossedY) {
-        console.log("Crossed aura");
+      // change volumne of sound when aura of different player was crossed
+      var otherBlobV = createVector(blobs[i].x, blobs[i].y);
+      incraseSound(otherBlobV, auraRadius4, 0.05);
+      incraseSound(otherBlobV, auraRadius3, 0.2);
+      incraseSound(otherBlobV, auraRadius2, 0.5);
+      incraseSound(otherBlobV, auraRadius1, 1);
+
+
+      if(otherBlobV.dist(blob.pos) > auraRadius4 && otherBlobV.dist(blob.pos) < auraRadius4 + 20) {
+        mySound.setVolume(0);
       }
+
+      // if(otherBlobV.dist(blob.pos) > auraRadius4) {
+      //   if(otherBlobV.dist(blob.pos) < auraRadius4 + 200) {
+      //     mySound.setVolume((otherBlobV.dist(blob.pos) - auraRadius4) * (1/150));
+      //   } else {
+      //     mySound.setVolume(0);
+      //   }
+      // }
+
     }
 
   }
@@ -152,6 +168,18 @@ function draw() {
   };
   socket.emit('update', data);
 
+}
+
+function incraseSound(otherBlobV, auraRadius, newval) {
+  if(mySound.isLoaded() && !mySound.isPlaying()) {
+    mySound.play();
+  }
+  var distance = otherBlobV.dist(blob.pos);
+  if(distance  < auraRadius) {
+    // console.log("Crossed aura");
+    // console.log("dist" + otherBlobV.dist(blob.pos))
+    mySound.setVolume(newval);
+  }
 }
 
 function drawBorders() {

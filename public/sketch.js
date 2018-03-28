@@ -107,6 +107,8 @@ function draw() {
       var auraRadius2 = blobs[i].r * 2 + 25
       var auraRadius3 = blobs[i].r * 2 + 58
       var auraRadius4 = blobs[i].r * 2 + 135
+      var radiuses = [auraRadius1, auraRadius2, auraRadius3, auraRadius4];
+
       fill(0, 0, 255, 80);
       ellipse(blobs[i].x, blobs[i].y, auraRadius1, auraRadius1);
 
@@ -129,10 +131,14 @@ function draw() {
       text(blobs[i].id, blobs[i].x, blobs[i].y + blobs[i].r);
 
       // change volumne of sound when aura of differentplayer was crossed
-      var crossedX = blob.pos.x - blobs[i].x < auraRadius4;
-      var crossedY = blob.pos.y - blobs[i].y < auraRadius4;
-      if(crossedX && crossedY) {
-        console.log("Crossed aura");
+      var otherBlobV = createVector(blobs[i].x, blobs[i].y);
+      incraseSound(otherBlobV, auraRadius4, 0.10);
+      incraseSound(otherBlobV, auraRadius3, 0.30);
+      incraseSound(otherBlobV, auraRadius2, 0.60);
+      incraseSound(otherBlobV, auraRadius1, 1);
+
+      if(otherBlobV.dist(blob.pos) > auraRadius4 + 10) {
+        mySound.setVolume(0);
       }
     }
 
@@ -152,6 +158,18 @@ function draw() {
   };
   socket.emit('update', data);
 
+}
+
+function incraseSound(otherBlobV, auraRadius, newval) {
+  if(mySound.isLoaded() && !mySound.isPlaying()) {
+    mySound.play();
+  }
+  var distance = otherBlobV.dist(blob.pos);
+  if(distance  < auraRadius) {
+    // console.log("Crossed aura");
+    // console.log("dist" + otherBlobV.dist(blob.pos))
+    mySound.setVolume(newval);
+  }
 }
 
 function drawBorders() {

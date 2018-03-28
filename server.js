@@ -71,9 +71,15 @@ io.sockets.on('connection',
           }
         }
         
-        blob.x = data.x;
-        blob.y = data.y;
-        blob.r = data.r;
+        // sometimes this fails on "blob is undefined". Looks like we get the 'update' before the 'start', 
+        // maybe from a user who was previously logged in.
+        if(blob == null) {
+          // we should probably call start() funtion here to initialize the client again.
+        } else {
+          blob.x = data.x;
+          blob.y = data.y;
+          blob.r = data.r;
+        }
       }
     );
 

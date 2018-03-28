@@ -36,7 +36,7 @@ function setup() {
   createCanvas(1200, 800);
   // Start a socket connection to the server
   // Some day we would run this server somewhere else
-  socket = io.connect('http://localhost:3000');
+  socket = io.connect('http://' + window.location.hostname + ':3000');
 
   blob = new Blob(username, random(width), random(height), random(8, 24));
   // Make a little object with  and y
@@ -130,16 +130,26 @@ function draw() {
       textSize(4);
       text(blobs[i].id, blobs[i].x, blobs[i].y + blobs[i].r);
 
-      // change volumne of sound when aura of differentplayer was crossed
+      // change volumne of sound when aura of different player was crossed
       var otherBlobV = createVector(blobs[i].x, blobs[i].y);
-      incraseSound(otherBlobV, auraRadius4, 0.10);
-      incraseSound(otherBlobV, auraRadius3, 0.30);
-      incraseSound(otherBlobV, auraRadius2, 0.60);
+      incraseSound(otherBlobV, auraRadius4, 0.05);
+      incraseSound(otherBlobV, auraRadius3, 0.2);
+      incraseSound(otherBlobV, auraRadius2, 0.5);
       incraseSound(otherBlobV, auraRadius1, 1);
 
-      if(otherBlobV.dist(blob.pos) > auraRadius4 + 10) {
+
+      if(otherBlobV.dist(blob.pos) > auraRadius4 && otherBlobV.dist(blob.pos) < auraRadius4 + 20) {
         mySound.setVolume(0);
       }
+
+      // if(otherBlobV.dist(blob.pos) > auraRadius4) {
+      //   if(otherBlobV.dist(blob.pos) < auraRadius4 + 200) {
+      //     mySound.setVolume((otherBlobV.dist(blob.pos) - auraRadius4) * (1/150));
+      //   } else {
+      //     mySound.setVolume(0);
+      //   }
+      // }
+
     }
 
   }

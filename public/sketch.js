@@ -8,52 +8,66 @@ var socket;
 
 var blob;
 
-var blobs = [];
+var otherPlayers = [];
 var zoom = 1;
-var username = 'someone';
+var nameChosen = 'someone';
 var updateNameButton;
 var playButton;
 var stopButton;
+var manuallyStopped = false;
 var logPosButton;
+
+const debugEnabled = 1;
 
 function preload() {
   soundFormats('mp3', 'ogg');
-  mySound = loadSound('assets/surfin.mp3');
+  mySound = loadSound('assets/tequila.mp3');
 }
 
 function setup() {
 
   // username field and button
   var inputField = createInput('type who you are');
-  inputField.input(function() { username = this.value() })
+  inputField.input(function() { nameChosen = this.value() });
   updateNameButton = createButton('update name');
-  updateNameButton.mousePressed(function() { 
-    console.log("changed username to: " + username);
-    blob.username = username; 
-  })
+  updateNameButton.mousePressed(function() {
+    console.log("changed username to: " + nameChosen);
+    blob.username = nameChosen;
+
+    var data = {
+      newusername: blob.username
+    };
+    socket.emit('updateUsername', data); 
+  });
 
 
-  createCanvas(1200, 800);
+  createCanvas(window.innerWidth * 0.8, window.innerHeight * 0.8);
   // Start a socket connection to the server
   // Some day we would run this server somewhere else
   socket = io.connect('http://' + window.location.hostname + ':3000');
 
-  blob = new Blob(username, random(width), random(height), random(8, 24));
-  // Make a little object with  and y
+  // SETUP ME:
+  blob = new Blob(nameChosen, random(width), random(height), random(8, 24), true);
+  // Make a little object with blob
   var data = {
     x: blob.pos.x,
     y: blob.pos.y,
-    r: blob.r
+    r: blob.r,
+    u: blob.username
   };
   socket.emit('start', data);
+  debug("client START:" + JSON.stringify(data));
 
+
+  // HERE the client receives the updated world from the server
   socket.on('heartbeat',
     function(data) {
       //console.log(data);
-      blobs = data;
+      // blobs = data;
+      otherPlayers = data;
+      // debug("others:" + JSON.stringify(otherPlayers);
     }
   );
-
 
   // play and stop buttons
   playButton = createButton("Play [>]");
@@ -61,7 +75,10 @@ function setup() {
     console.log("playing audio");
     // if(mySound != null && mySound.isLoaded()) { 
       // mySound = loadSound('assets/hope.mp3');
-    mySound.play();
+    if(mySound.isLoaded() && !mySound.isPlaying()) {
+      mySound.play();
+    }
+    manuallyStopped = false;
     // }
   })
     
@@ -69,24 +86,47 @@ function setup() {
   stopButton.mousePressed(function() { 
     console.log("stop playing audio");
     mySound.stop();
+    manuallyStopped = true;
   })
   mySound.setVolume(1);
 
+
+  // log positions:
   logPosButton = createButton("Log Positions");
   logPosButton.mousePressed(function() {
-    console.log("My pos is: " + blob.pos);
-    for (var i = blobs.length - 1; i >= 0; i--) {
-      var otherBlobPos = createVector(blobs[i].x, blobs[i].y);
-      console.log("Pos for : " + blob.id + " is : " + otherBlobPos);
+      printPositions(otherPlayers, blob);
     }
-  });
+  );
+}
+
+function printPositions(otherPlayers, me) {
+    console.log("My pos is: " + me.pos); // mine
+
+    for (var i = otherPlayers.length - 1; i >= 0; i--) {  // others
+      var otherBlobPos = createVector(otherPlayers[i].x, otherPlayers[i].y);
+      console.log("Pos for : " + otherPlayers[i].id + " is : " + otherBlobPos);
+    }
+  }
+
+// function printPos(player) {
+//       console.log("Pos for : " + player.id + " is : " + createVector(player.x, player.y));
+// };
+
+// function toOthers(others, doThis) {
+//   for (var i = others.length - 1; i >= 0; i--) {
+//     doThis(others[i]);
+//   }
+// }
+
+function debug(s) {
+  if(debugEnabled) {
+    console.log("DEBUG : " + s);
+  }
 }
 
 
-
-
 function draw() {
-  noStroke()
+  noStroke();
   background(0);
   // console.log(blob.pos.x, blob.pos.y);
 
@@ -96,64 +136,65 @@ function draw() {
   scale(zoom);
   translate(-blob.pos.x, -blob.pos.y);
 
-  // draw others
-  for (var i = blobs.length - 1; i >= 0; i--) {
-    var id = blobs[i].id;
-    if (id !== socket.id) { // draw only others, not yourself
+  // ### Draw others ###
+  for (var i = otherPlayers.length - 1; i >= 0; i--) {
 
-      // create auras
+    // change "blos" to players
+    var player = otherPlayers[i];
 
-      var auraRadius1 = blobs[i].r * 2 + 10
-      var auraRadius2 = blobs[i].r * 2 + 25
-      var auraRadius3 = blobs[i].r * 2 + 58
-      var auraRadius4 = blobs[i].r * 2 + 135
+    var myId = socket.id;
+
+    if (player.id !== myId) { // draw only others, not yourself
+      // // print username
+      // fill(0);
+      // text(player.u, player.x, player.y);
+      // textAlign(CENTER, CENTER);
+
+
+      // ## Create auras
+
+      var auraRadius1 = player.r * 2 + 10
+      var auraRadius2 = player.r * 2 + 25
+      var auraRadius3 = player.r * 2 + 58
+      var auraRadius4 = player.r * 2 + 135
       var radiuses = [auraRadius1, auraRadius2, auraRadius3, auraRadius4];
 
       fill(0, 0, 255, 80);
-      ellipse(blobs[i].x, blobs[i].y, auraRadius1, auraRadius1);
+      ellipse(player.x, player.y, auraRadius1, auraRadius1);
 
       fill(0, 0, 255, 50);
-      ellipse(blobs[i].x, blobs[i].y, auraRadius2, auraRadius2);
+      ellipse(player.x, player.y, auraRadius2, auraRadius2);
 
       fill(0, 0, 255, 30);
-      ellipse(blobs[i].x, blobs[i].y, auraRadius3, auraRadius3);
+      ellipse(player.x, player.y, auraRadius3, auraRadius3);
 
       fill(0, 0, 255, 20);
-      ellipse(blobs[i].x, blobs[i].y, auraRadius4, auraRadius4);
+      ellipse(player.x, player.y, auraRadius4, auraRadius4);
 
 
       // main blob
       fill(0, 0, 255);
-      ellipse(blobs[i].x, blobs[i].y, blobs[i].r * 2, blobs[i].r * 2);
+      ellipse(player.x, player.y, player.r * 2, player.r * 2);
       fill(255);
       textAlign(CENTER);
       textSize(4);
-      text(blobs[i].id, blobs[i].x, blobs[i].y + blobs[i].r);
+      text(player.u, player.x, player.y + player.r);
 
       // change volumne of sound when aura of different player was crossed
-      var otherBlobV = createVector(blobs[i].x, blobs[i].y);
+      var otherBlobV = createVector(player.x, player.y);
       incraseSound(otherBlobV, auraRadius4, 0.05);
       incraseSound(otherBlobV, auraRadius3, 0.2);
       incraseSound(otherBlobV, auraRadius2, 0.5);
       incraseSound(otherBlobV, auraRadius1, 1);
-
-
+      // create some fade even after last aura
       if(otherBlobV.dist(blob.pos) > auraRadius4 && otherBlobV.dist(blob.pos) < auraRadius4 + 20) {
         mySound.setVolume(0);
-      }
-
-      // if(otherBlobV.dist(blob.pos) > auraRadius4) {
-      //   if(otherBlobV.dist(blob.pos) < auraRadius4 + 200) {
-      //     mySound.setVolume((otherBlobV.dist(blob.pos) - auraRadius4) * (1/150));
-      //   } else {
-      //     mySound.setVolume(0);
-      //   }
-      // }
+      } // add a better algo here at some point
 
     }
-
   }
 
+  // ## SHOW ME: ##
   blob.show();
   if (mouseIsPressed) {
     blob.update();
@@ -166,12 +207,11 @@ function draw() {
     y: blob.pos.y,
     r: blob.r
   };
-  socket.emit('update', data);
-
+  socket.emit('update', data); // HERE the scetch sends the current player to the server
 }
 
 function incraseSound(otherBlobV, auraRadius, newval) {
-  if(mySound.isLoaded() && !mySound.isPlaying()) {
+  if(mySound.isLoaded() && !mySound.isPlaying() && !manuallyStopped) {
     mySound.play();
   }
   var distance = otherBlobV.dist(blob.pos);

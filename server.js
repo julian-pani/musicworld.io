@@ -8,11 +8,12 @@
 
 var blobs = [];
 
-function Blob(id, x, y, r) {
+function BlobOnServer(id, x, y, r, u) {
   this.id = id;
   this.x = x;
   this.y = y;
   this.r = r;
+  this.u = u;
 }
 
 // Using express: http://expressjs.com/
@@ -55,13 +56,13 @@ io.sockets.on('connection',
 
     socket.on('start',
       function(data) {
-        console.log(socket.id + " " + data.x + " " + data.y + " " + data.r);
-        var blob = new Blob(socket.id, data.x, data.y, data.r);
+        console.log("starting client: " + socket.id + " " + data.x + " " + data.y + " " + data.r + " " + data.u);
+        var blob = new BlobOnServer(socket.id, data.x, data.y, data.r, data.u);
         blobs.push(blob);
       }
     );
 
-    socket.on('update',
+    socket.on('update', // HERE the server gets the update from each client with their state.
       function(data) {
         //console.log(socket.id + " " + data.x + " " + data.y + " " + data.r);
         var blob;
@@ -93,6 +94,14 @@ io.sockets.on('connection',
         }
         
       console.log("Client has disconnected");
+    });
+
+    socket.on('updateUsername', function(data) {
+        for (var i = 0; i < blobs.length; i++) {
+          if (socket.id == blobs[i].id) {
+            blobs[i].u = data.newusername;
+          }
+        }
     });
   }
 );

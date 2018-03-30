@@ -3,30 +3,25 @@
 // http://patreon.com/codingtrain
 // Code for: https://youtu.be/ZjVyKXp9hec
 
-function Blob(username, x, y, r) {
+function Blob(username, x, y, r, isme) {
   this.username = username;
   this.pos = createVector(x, y);
   this.r = r;
   this.vel = createVector(0, 0);
+  this.isme = isme;
+
+  var mecolor = color(255, 255, 255);
+  var othersColor = color(random(255), random(255), random(255));
 
   this.update = function() {
     var newvel = createVector(mouseX - width / 2, mouseY - height / 2);
-    newvel.div(50);
-    //newvel.setMag(3);
-    newvel.limit(3);
-    this.vel.lerp(newvel, 0.2);
-    this.pos.add(this.vel);
-  }
-
-  this.eats = function(other) {
-    var d = p5.Vector.dist(this.pos, other.pos);
-    if (d < this.r + other.r) {
-      var sum = PI * this.r * this.r + PI * other.r * other.r;
-      this.r = sqrt(sum / PI);
-      //this.r += other.r;
-      return true;
-    } else {
-      return false;
+      if(isme) {
+        // move me
+        newvel.div(50);
+        //newvel.setMag(3);
+        newvel.limit(3);
+        this.vel.lerp(newvel, 0.2);
+        this.pos.add(this.vel);
     }
   }
 

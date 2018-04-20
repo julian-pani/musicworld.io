@@ -31,9 +31,9 @@ class User {
     // var newvel = createVector(mouseX - this.pos.x, mouseY - this.pos.y);
       if(this.isme) {
         // move me
-        newvel.div(50);
+        newvel.div(40);
         //newvel.setMag(3);
-        newvel.limit(3);
+        newvel.limit(10);
         this.vel.lerp(newvel, 1);
         this.pos.add(this.vel);
     }

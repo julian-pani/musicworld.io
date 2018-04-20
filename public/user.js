@@ -11,7 +11,7 @@ class User {
     this.r = r;
     this.vel = createVector(0, 0);
     this.isme = isme;
-
+    this.img = undefined;
     this.mecolor = color(255, 255, 255);
     this.othersColor = color(random(255), random(255), random(255));
   
@@ -42,8 +42,8 @@ class User {
   }
 
   constrain() {
-    this.pos.x = constrain(this.pos.x, (-width / 4) + this.r, (width / 4) - this.r);
-    this.pos.y = constrain(this.pos.y, (-height / 4) + this.r, (height / 4) - this.r);
+    this.pos.x = constrain(this.pos.x, (-width / 2) + this.r, (width / 2) - this.r);
+    this.pos.y = constrain(this.pos.y, (-height / 2) + this.r, (height / 2) - this.r);
   }
 
   show() {
@@ -51,13 +51,6 @@ class User {
       this.drawUser(color([255, 255, 255]), 0, 0);
     } else {
       this.drawUser(color([0, 0, 255]), 255, this.r);
-      // // main user
-      // fill(0, 0, 255);
-      // ellipse(this.pos.x, this.pos.y, this.r * 2, this.r * 2);
-      // fill(255);
-      // textAlign(CENTER, CENTER);
-      // textSize(8);
-      // text(this.username, this.pos.x, this.pos.y + r);
     }
     this.constrain();
   }
@@ -68,7 +61,7 @@ class User {
     ellipse(this.pos.x, this.pos.y, this.r * 2, this.r * 2);
     fill(textColor);
     textAlign(CENTER, CENTER);
-    textSize(8);
+    textSize(this.r * 0.4);
     text(this.username, this.pos.x, this.pos.y + textYmodifier);
   }
 

@@ -14,7 +14,7 @@ var cookieParser = require('cookie-parser');
 
 var client_id = 'c89109f51f8b4f35a63a581d4cff21bc'; // Your client id
 var client_secret = 'a37191d71d2a41518168a33910a98c80'; // Your secret
-var redirect_uri = 'http://localhost:3000/callback'; // Your redirect uri
+var redirect_uri = 'http://www.musicworld.io:3000/callback'; // Your redirect uri
 
 /**
  * Generates a random string containing numbers and letters

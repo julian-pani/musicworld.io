@@ -16,6 +16,10 @@ function BlobOnServer(id, x, y, r, u) {
   this.u = u;
 }
 
+
+var spotifyAuth = require('./spotify-auth');
+var cookieParser = require('cookie-parser');
+
 // Using express: http://expressjs.com/
 var express = require('express');
 // Create the app
@@ -32,8 +36,23 @@ function listen() {
   console.log('Example app listening at http://' + host + ':' + port);
 }
 
-app.use(express.static('public'));
+app.use(express.static(__dirname + '/public'))
+   .use(cookieParser());
 
+
+// ## Spotify login routes ##
+app.get('/login', function(req, res) {
+  spotifyAuth.login(req, res);
+});
+app.get('/callback', function(req, res) {
+  spotifyAuth.authCallback(req, res);
+});
+app.get('/refresh_token', function(req, res) {
+  spotifyAuth.refreshToken(req, res);
+});
+
+app.get('/test', (req, res) => res.send('Hello World!'))
+app.get('/play', (req, res) => res.sendFile(__dirname + '/public/play.html'))
 
 // WebSocket Portion
 // WebSockets work with the HTTP server
